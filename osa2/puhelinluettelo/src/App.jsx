@@ -52,7 +52,7 @@ const App = () => {
                 type: "success",
               })
             })
-            .catch((error) =>
+            .catch(() =>
               setMessage({
                 text: `Information of ${personToUpdate.name} has already been removed from server`,
                 type: "error",
@@ -73,7 +73,7 @@ const App = () => {
           })
           .catch((error) =>
             setMessage({
-              text: `Error adding ${newName}`,
+              text: `${error.response.data.error}`,
               type: "error",
             })
           )
@@ -98,7 +98,6 @@ const App = () => {
     setSearchName(event.target.value)
   }
   const removePerson = (id) => {
-    //console.log("removing person with id", id)
     const person = persons.find((person) => person.id === id)
     if (window.confirm(`Delete ${person.name} ?`)) {
       nameService
@@ -110,7 +109,7 @@ const App = () => {
             type: "success",
           })
         })
-        .catch((error) =>
+        .catch(() =>
           setMessage({
             text: `Person ${person.name} was already removed from server`,
             type: "error",
