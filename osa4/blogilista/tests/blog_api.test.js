@@ -6,11 +6,34 @@ const app = require('../app')
 const api = supertest(app)
 const helper = require('./test_helper')
 const Blog = require('../models/blog')
+const User = require('../models/user')
 
-describe('when tere is initially some blogs saved', () => {
+describe.only('when tere is initially some blogs saved', () => {
+  let token
+
   beforeEach(async () => {
     await Blog.deleteMany({})
     await Blog.insertMany(helper.initialBlogs)
+    await User.deleteMany({})
+
+    const newUser = {
+      username: 'testUser',
+      name: 'testUser',
+      password: 'salainen',
+    }
+
+    await api
+      .post('/api/users')
+      .set('Content-Type', 'application/json')
+      .send(newUser)
+      .expect(201)
+
+    const testUser = {
+      username: 'testUser',
+      password: 'salainen',
+    }
+    const response = await api.post('/api/login').send(testUser)
+    token = response.body.token
   })
   test('blogs are returned as json', async () => {
     await api
@@ -69,6 +92,7 @@ describe('when tere is initially some blogs saved', () => {
       }
       await api
         .post('/api/blogs')
+        .set('Authorization', `Bearer ${token}`)
         .send(newBlog)
         .expect(201)
         .expect('Content-Type', /application\/json/)
@@ -78,6 +102,21 @@ describe('when tere is initially some blogs saved', () => {
 
       const blogTitles = blogsAtEnd.map((r) => r.title)
       assert(blogTitles.includes('A New Hope'))
+    })
+
+    test('fails with status code 401 if token is missing', async () => {
+      const newBlog = {
+        _id: '5a422bc61b54a676234d18fd',
+        title: 'A New Hope',
+        author: 'Robert C. Martin',
+        url: 'http://blog.cleancoder.com/uncle-bob/2020/04/05/ANewHope.html',
+        likes: 3,
+        __v: 0,
+      }
+      await api.post('/api/blogs').send(newBlog).expect(401)
+
+      const blogsAtEnd = await helper.blogsInDb()
+      assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length)
     })
 
     describe('missing data is initialized', () => {
@@ -91,6 +130,7 @@ describe('when tere is initially some blogs saved', () => {
         }
         const response = await api
           .post('/api/blogs')
+          .set('Authorization', `Bearer ${token}`)
           .send(newBlog)
           .expect(201)
           .expect('Content-Type', /application\/json/)
@@ -107,7 +147,11 @@ describe('when tere is initially some blogs saved', () => {
           likes: 3,
           __v: 0,
         }
-        await api.post('/api/blogs').send(newBlog).expect(400)
+        await api
+          .post('/api/blogs')
+          .set('Authorization', `Bearer ${token}`)
+          .send(newBlog)
+          .expect(400)
         const blogsAtEnd = await helper.blogsInDb()
 
         assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length)
@@ -120,7 +164,11 @@ describe('when tere is initially some blogs saved', () => {
           likes: 3,
           __v: 0,
         }
-        await api.post('/api/blogs').send(newBlog).expect(400)
+        await api
+          .post('/api/blogs')
+          .set('Authorization', `Bearer ${token}`)
+          .send(newBlog)
+          .expect(400)
         const blogsAtEnd = await helper.blogsInDb()
 
         assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length)
@@ -129,14 +177,29 @@ describe('when tere is initially some blogs saved', () => {
   })
   describe('deletion of a blog', () => {
     test('succeeds with status code 204 if id is valid', async () => {
-      const blogsAtStart = await helper.blogsInDb()
-      const blogToDelete = blogsAtStart[0]
+      const newBlog = {
+        _id: '5a422bc61b54a676234d18fd',
+        title: 'A New Hope',
+        author: 'Robert C. Martin',
+        url: 'http://blog.cleancoder.com/uncle-bob/2020/04/05/ANewHope.html',
+        likes: 3,
+        __v: 0,
+      }
 
-      await api.delete(`/api/blogs/${blogToDelete.id}`).expect(204)
+      const blogToDelete = await api
+        .post('/api/blogs')
+        .set('Authorization', `Bearer ${token}`)
+        .send(newBlog)
+        .expect(201)
+        .expect('Content-Type', /application\/json/)
+
+      await api
+        .delete(`/api/blogs/${blogToDelete.body.id}`)
+        .set('Authorization', `Bearer ${token}`)
+        .expect(204)
 
       const blogsAtEnd = await helper.blogsInDb()
-
-      assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length - 1)
+      assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length)
 
       const ids = blogsAtEnd.map((r) => r.id)
       assert(!ids.includes(blogToDelete.id))

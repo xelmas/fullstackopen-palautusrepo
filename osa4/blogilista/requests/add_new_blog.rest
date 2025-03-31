@@ -3,5 +3,5 @@ Content-Type: application/json
 Authorization: Bearer 
 
 {
-    "title": "kirja4", "author": "testinen", "url": "testiurl", "likes": 2
+    "title": "testikirja2", "author": "testinen", "url": "testiurl", "likes": 2
 }
