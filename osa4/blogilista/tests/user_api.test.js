@@ -60,9 +60,56 @@ describe('when there is initially one user at db', () => {
 
     assert.strictEqual(usersAtEnd.length, usersAtStart.length)
   })
+
+  test('creation fails with proper statuscode and message if username is not valid', async () => {
+    const usersAtStart = await helper.usersInDb()
+
+    const newUser = {
+      username: 'te',
+      name: 'testing',
+      password: 'salainen',
+    }
+
+    const result = await api
+      .post('/api/users')
+      .send(newUser)
+      .expect(400)
+      .expect('Content-Type', /application\/json/)
+
+    const usersAtEnd = await helper.usersInDb()
+    assert(
+      result.body.error.includes('is shorter than the minimum allowed length')
+    )
+    assert.strictEqual(usersAtEnd.length, usersAtStart.length)
+  })
+
+  test('creation fails with proper statuscode and message if password is not valid', async () => {
+    const usersAtStart = await helper.usersInDb()
+
+    const newUser = {
+      username: 'testing',
+      name: 'testing',
+      password: 'sa',
+    }
+
+    const result = await api
+      .post('/api/users')
+      .send(newUser)
+      .expect(400)
+      .expect('Content-Type', /application\/json/)
+
+    const usersAtEnd = await helper.usersInDb()
+    assert(
+      result.body.error.includes(
+        'password is shorter than the minimum allowed length'
+      )
+    )
+
+    assert.strictEqual(usersAtEnd.length, usersAtStart.length)
+  })
 })
 
 after(async () => {
-  await User.deleteMany({})
+  //await User.deleteMany({})
   await mongoose.connection.close()
 })
