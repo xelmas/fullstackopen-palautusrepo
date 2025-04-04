@@ -1,7 +1,15 @@
 import { useState } from 'react'
 
-const Blog = ({ blog }) => {
+const Blog = ({ blog, updateBlog }) => {
   const [showInfo, setShowInfo] = useState(false)
+
+  const likeBlog = (event) => {
+    event.preventDefault()
+    updateBlog({
+      ...blog,
+      likes: blog.likes + 1,
+    })
+  }
 
   const toggleShowInfo = () => {
     setShowInfo(!showInfo)
@@ -26,7 +34,7 @@ const Blog = ({ blog }) => {
         <div>
           <div>{blog.url}</div>
           <div>
-            likes {blog.likes} <button>like</button>
+            likes {blog.likes} <button onClick={likeBlog}>like</button>
           </div>
           <div>{blog.user.name}</div>
         </div>
