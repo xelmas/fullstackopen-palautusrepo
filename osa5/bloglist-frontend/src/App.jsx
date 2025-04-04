@@ -49,11 +49,7 @@ const App = () => {
   const updateBlog = (blogObject) => {
     blogService.update(blogObject.id, blogObject).then((returnedBlog) => {
       setBlogs(
-        blogs.map((blog) =>
-          blog.id === returnedBlog.id
-            ? { ...returnedBlog, user: blog.user }
-            : blog
-        )
+        blogs.map((blog) => (blog.id === returnedBlog.id ? returnedBlog : blog))
       )
     })
   }
