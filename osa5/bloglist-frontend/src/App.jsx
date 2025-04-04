@@ -58,6 +58,16 @@ const App = () => {
     })
   }
 
+  const removeBlog = (blogObject) => {
+    if (
+      window.confirm(`Remove blog ${blogObject.title} by ${blogObject.author}?`)
+    ) {
+      blogService.remove(blogObject.id).then(() => {
+        setBlogs(blogs.filter((blogs) => blogs.id !== blogObject.id))
+      })
+    }
+  }
+
   const handleLogin = async (event) => {
     event.preventDefault()
     try {
@@ -71,7 +81,7 @@ const App = () => {
       setPassword('')
       notifyWith(`${user.username} logged in`)
     } catch (exception) {
-      notifyWith(`wrong username or password`, true)
+      notifyWith('wrong username or password', true)
     }
   }
 
@@ -121,7 +131,13 @@ const App = () => {
           {[...blogs]
             .sort((a, b) => b.likes - a.likes)
             .map((blog) => (
-              <Blog key={blog.id} blog={blog} updateBlog={updateBlog} />
+              <Blog
+                key={blog.id}
+                blog={blog}
+                updateBlog={updateBlog}
+                removeBlog={removeBlog}
+                currentUser={user}
+              />
             ))}
         </div>
       </div>
