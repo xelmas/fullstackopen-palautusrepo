@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import PropTypes from 'prop-types'
 
 const Blog = ({ blog, updateBlog, removeBlog, currentUser }) => {
   const [showInfo, setShowInfo] = useState(false)
@@ -37,7 +36,7 @@ const Blog = ({ blog, updateBlog, removeBlog, currentUser }) => {
         <button onClick={toggleShowInfo}>{label}</button>
       </div>
       {showInfo && (
-        <div>
+        <div className='togglableContent'>
           <div>{blog.url}</div>
           <div>
             likes {blog.likes} <button onClick={likeBlog}>like</button>
@@ -48,15 +47,6 @@ const Blog = ({ blog, updateBlog, removeBlog, currentUser }) => {
       )}
     </div>
   )
-}
-
-Blog.displayName = 'Blog'
-
-Blog.propTypes = {
-  blog: PropTypes.object.isRequired,
-  updateBlog: PropTypes.func.isRequired,
-  removeBlog: PropTypes.func.isRequired,
-  currentUser: PropTypes.object.isRequired,
 }
 
 export default Blog

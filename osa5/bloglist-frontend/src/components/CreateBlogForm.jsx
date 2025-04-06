@@ -18,7 +18,7 @@ const CreateBlogForm = ({ createBlog }) => {
   }
 
   return (
-    <div>
+    <div className='formDiv'>
       <h2>create new</h2>
       <form onSubmit={addBlog}>
         <div>
@@ -27,6 +27,7 @@ const CreateBlogForm = ({ createBlog }) => {
             type='text'
             value={newTitle}
             onChange={(event) => setNewTitle(event.target.value)}
+            placeholder='write a title'
           />
         </div>
         <div>
@@ -35,6 +36,7 @@ const CreateBlogForm = ({ createBlog }) => {
             type='text'
             value={newAuthor}
             onChange={(event) => setNewAuthor(event.target.value)}
+            placeholder='write an author'
           />
         </div>
         <div>
@@ -43,6 +45,7 @@ const CreateBlogForm = ({ createBlog }) => {
             type='text'
             value={newUrl}
             onChange={(event) => setNewUrl(event.target.value)}
+            placeholder='write a url'
           />
         </div>
         <button type='submit'>create</button>
