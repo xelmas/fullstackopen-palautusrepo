@@ -75,7 +75,7 @@ const App = () => {
       setUser(user)
       setUsername('')
       setPassword('')
-      notifyWith(`${user.username} logged in`)
+      notifyWith(`${user.name} logged in`)
     } catch (exception) {
       notifyWith('wrong username or password', true)
     }
@@ -87,6 +87,7 @@ const App = () => {
       <div>
         username
         <input
+          data-testid='username'
           type='text'
           value={username}
           name='Username'
@@ -96,6 +97,7 @@ const App = () => {
       <div>
         password
         <input
+          data-testid='password'
           type='password'
           value={password}
           name='Password'
