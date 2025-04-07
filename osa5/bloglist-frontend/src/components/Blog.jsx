@@ -37,7 +37,12 @@ const Blog = ({ blog, updateBlog, removeBlog, currentUser }) => {
       </div>
       {showInfo && (
         <div className='togglableContent'>
-          <div>{blog.url}</div>
+          <div>
+            {' '}
+            <a href={blog.url} target='_blank' rel='noopener noreferrer'>
+              {blog.url}
+            </a>
+          </div>
           <div>
             likes {blog.likes} <button onClick={likeBlog}>like</button>
           </div>
