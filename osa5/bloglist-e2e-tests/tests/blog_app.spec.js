@@ -1,9 +1,10 @@
 const { test, expect, beforeEach, describe } = require('@playwright/test')
+const { loginWith, createBlog, likeBlog } = require('./helper')
 
 describe('Blog app', () => {
   beforeEach(async ({ page, request }) => {
-    await request.post('http://localhost:3003/api/testing/reset')
-    await request.post('http://localhost:3003/api/users', {
+    await request.post('api/testing/reset')
+    await request.post('/api/users', {
       data: {
         name: 'Test user',
         username: 'testuser',
@@ -11,7 +12,7 @@ describe('Blog app', () => {
       },
     })
 
-    await page.goto('http://localhost:5173')
+    await page.goto('/')
   })
 
   test('Login form is shown', async ({ page }) => {
@@ -22,21 +23,39 @@ describe('Blog app', () => {
 
   describe('Login', () => {
     test('succeeds with correct credentials', async ({ page }) => {
-      await page.getByTestId('username').fill('testuser')
-      await page.getByTestId('password').fill('salainen')
-
-      await page.getByRole('button', { name: 'login' }).click()
-
+      await loginWith(page, 'testuser', 'salainen')
       await expect(page.getByText('Test user logged in')).toBeVisible()
     })
 
     test('fails with wrong credentials', async ({ page }) => {
-      await page.getByTestId('username').fill('testing')
-      await page.getByTestId('password').fill('salainen')
-
-      await page.getByRole('button', { name: 'login' }).click()
-
+      await loginWith(page, 'testing', 'salainen')
       await expect(page.getByText('wrong username or password')).toBeVisible()
+    })
+  })
+  describe('When logged in', () => {
+    beforeEach(async ({ page }) => {
+      await loginWith(page, 'testuser', 'salainen')
+      await createBlog(page, 'testing title', 'testing author', 'testing url')
+    })
+
+    test('a new blog can be created', async ({ page }) => {
+      await createBlog(
+        page,
+        'new testing title',
+        'tester author',
+        'testing url'
+      )
+      await expect(
+        page.getByText('a new blog new testing title by tester author added')
+      ).toBeVisible()
+      await expect(
+        page.getByText('new testing title tester author')
+      ).toBeVisible()
+    })
+
+    test('and blog can be liked', async ({ page }) => {
+      await likeBlog(page)
+      await expect(page.getByText('likes 1')).toBeVisible()
     })
   })
 })
