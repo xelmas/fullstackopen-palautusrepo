@@ -10,6 +10,8 @@ const createBlog = async (page, title, author, url) => {
   await page.getByTestId('author').fill(author)
   await page.getByTestId('url').fill(url)
   await page.getByRole('button', { name: 'create' }).click()
+
+  await page.getByText(`${title} ${author}`).waitFor()
 }
 
 const likeBlog = async (page) => {
@@ -17,4 +19,29 @@ const likeBlog = async (page) => {
   await page.getByRole('button', { name: 'like' }).click()
 }
 
-export { loginWith, createBlog, likeBlog }
+const removeBlog = async (page) => {
+  await page.getByRole('button', { name: 'view' }).click()
+  await page.getByRole('button', { name: 'remove' }).click()
+}
+
+const addLikes = async (page, count) => {
+  for (let i = 0; i < count; i++) {
+    await page.getByRole('button', { name: 'like' }).click()
+  }
+  await page.getByRole('button', { name: 'hide' }).click()
+}
+
+const populateLikes = async (page) => {
+  const blogsViewButton = await page.getByRole('button', { name: 'view' }).all()
+
+  await blogsViewButton[0].click()
+  await addLikes(page, 1)
+
+  await blogsViewButton[1].click()
+  await addLikes(page, 3)
+
+  await blogsViewButton[2].click()
+  await addLikes(page, 2)
+}
+
+export { loginWith, createBlog, likeBlog, removeBlog, populateLikes }

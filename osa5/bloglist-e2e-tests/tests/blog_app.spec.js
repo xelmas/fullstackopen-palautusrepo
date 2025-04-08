@@ -1,5 +1,11 @@
 const { test, expect, beforeEach, describe } = require('@playwright/test')
-const { loginWith, createBlog, likeBlog } = require('./helper')
+const {
+  loginWith,
+  createBlog,
+  likeBlog,
+  removeBlog,
+  populateLikes,
+} = require('./helper')
 
 describe('Blog app', () => {
   beforeEach(async ({ page, request }) => {
@@ -11,7 +17,13 @@ describe('Blog app', () => {
         password: 'salainen',
       },
     })
-
+    await request.post('/api/users', {
+      data: {
+        name: 'Other user',
+        username: 'otheruser',
+        password: 'salainen',
+      },
+    })
     await page.goto('/')
   })
 
@@ -24,7 +36,7 @@ describe('Blog app', () => {
   describe('Login', () => {
     test('succeeds with correct credentials', async ({ page }) => {
       await loginWith(page, 'testuser', 'salainen')
-      await expect(page.getByText('Test user logged in')).toBeVisible()
+      await expect(page.getByText('Test user logged in').first()).toBeVisible()
     })
 
     test('fails with wrong credentials', async ({ page }) => {
@@ -56,6 +68,72 @@ describe('Blog app', () => {
     test('and blog can be liked', async ({ page }) => {
       await likeBlog(page)
       await expect(page.getByText('likes 1')).toBeVisible()
+    })
+
+    test('remove button for blog is only visible to its adder', async ({
+      page,
+    }) => {
+      await page.getByRole('button', { name: 'view' }).click()
+      await expect(page.getByRole('button', { name: 'remove' })).toBeVisible()
+    })
+
+    test('and blog can be removed', async ({ page }) => {
+      page.once('dialog', async (dialog) => {
+        await dialog.accept()
+      })
+      await removeBlog(page)
+      await expect(
+        page.getByText('testing title testing author')
+      ).not.toBeVisible()
+    })
+    test('remove button for blog is not visible to others', async ({
+      page,
+    }) => {
+      await page.getByRole('button', { name: 'log out' }).click()
+      await loginWith(page, 'otheruser', 'salainen')
+
+      await page.getByRole('button', { name: 'view' }).click()
+      await expect(
+        page.getByRole('button', { name: 'remove' })
+      ).not.toBeVisible()
+    })
+
+    describe('blogs are sorted in descending order by likes', () => {
+      beforeEach(async ({ page }) => {
+        await createBlog(
+          page,
+          'testing title with the most likes',
+          'testing author',
+          'testing url'
+        )
+        await createBlog(
+          page,
+          'testing title with the 2nd most likes',
+          'testing author',
+          'testing url'
+        )
+        await createBlog(
+          page,
+          'testing title with least likes',
+          'testing author',
+          'testing url'
+        )
+        await populateLikes(page)
+      })
+
+      test('blogs are sorted correctly', async ({ page }) => {
+        const blogs = await page
+          .locator('[data-testid^="blog-title-author"]')
+          .all()
+        const blogDetails = await Promise.all(blogs.map((el) => el.innerText()))
+
+        expect(blogDetails).toEqual([
+          'testing title with the most likes testing author',
+          'testing title with the 2nd most likes testing author',
+          'testing title testing author',
+          'testing title with least likes testing author',
+        ])
+      })
     })
   })
 })

@@ -32,7 +32,9 @@ const Blog = ({ blog, updateBlog, removeBlog, currentUser }) => {
   return (
     <div style={blogStyle}>
       <div>
-        {blog.title} {blog.author}{' '}
+        <span data-testid='blog-title-author'>
+          {blog.title} {blog.author}
+        </span>
         <button onClick={toggleShowInfo}>{label}</button>
       </div>
       {showInfo && (
@@ -44,7 +46,8 @@ const Blog = ({ blog, updateBlog, removeBlog, currentUser }) => {
             </a>
           </div>
           <div>
-            likes {blog.likes} <button onClick={likeBlog}>like</button>
+            likes {blog.likes}
+            <button onClick={likeBlog}>like</button>
           </div>
           <div>{blog.user.name}</div>
           {isAdder && <button onClick={handleRemoveBlog}>remove</button>}
